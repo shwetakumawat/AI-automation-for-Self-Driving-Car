@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>rotation</title>
+</head>
+<body>
+  <canvas id="screen"></canvas>
+  <p>Gray: original</p>
+  <p>Red: rotating about the origin</p>
+  <p>Green: rotating about its center</p>
+  <p>Angle:</p>
+  <output id="angle"></output>
+  <p>Speed:</p>
+  <input type="range" id="speed" min="10" max="200" value="167" step="1">
+
+  <br> <hr>
+
+  <h3>rotation matrix derivation</h3>
+  <img src="./lines.png" alt="lines" width="500">
+
+  <pre style="margin: 2em 3em;font-size: 1.5em;">
+    if there is a point at (x, y), and we want to rotate it by `t` degrees
+    and determine the new position (x', y')
+
+    first, we can draw a line from the point (x, y) to the origin with length L
+    its angle to the x-axis is θ
+    
+    then, a right angle triangle can be formed, with L being the hypot, x being the adjacent
+    and y being the opposite
+
+    using basic trigonomic values
+    sin(θ) = o / h
+    cos(θ) = a / h
+
+    looking at our triangle, we can get that
+    cos(θ) = x / L
+    sin(θ) = y / L
+
+    the transformed x' and y' can be expressed in the same way,
+    then rearrange so that x' and y' are on their own
+    the new angle is just θ with t added
+    x' = L * cos(θ + t)
+    y' = L * sin(θ + t)
+
+    using the addition identities, expand
+    x' = L * (cos(θ) * cos(t) - sin(θ) * sin(t))
+    y' = L * (sin(θ) * cos(t) + cos(θ) * sin(t))
+
+    expand L
+    x' = L * cos(θ) * cos(t) - L * sin(θ) * sin(t)
+    y' = L * sin(θ) * cos(t) + L * cos(θ) * sin(t)
+
+    using the relation we got earlier, cos(θ) and sin(θ) can be replaced
+    x' = L * x / L * cos(t) - L * y / L * sin(t)
+    y' = L * y / L * cos(t) + L * x / L * sin(t)
+
+    L cancles out
+    x' = x * cos(t) - y * sin(t)
+    y' = y * cos(t) + x * sin(t)
+
+    or
+    x' = x * cos(t) - y * sin(t)
+    y' = x * sin(t) + y * cos(t)
+    
+    or in matrix form
+    [x'] = [cos(t) -sin(t)] * [x]
+    [y']   [sin(t)  cos(t)]   [y]
+
+
+
+  </pre>
+
+  <script src="./script.js"></script>
+</body>
+</html>

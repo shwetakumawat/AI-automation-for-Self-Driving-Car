@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=10">
+  <title>Intercept</title>
+  <script src="./script.js" defer></script>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+    }
+    canvas {
+      border: 1px solid black;
+    }
+    #outputs {
+      display: grid;
+      grid-template-columns: auto auto;
+      width: fit-content;
+      border: 1px solid blue;
+      padding: .5em;
+      margin: 2em 3em;
+    }
+    pre {
+      margin: 2em 3em;
+      font-size: 1.5em;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="screen"></canvas>
+  <p>Points draggable</p>
+  <div id="outputs">
+    <span>t: </span>
+    <output id="t"></output>
+    <span>u: </span>
+    <output id="u"></output>
+    <span>line 1 start and end: </span>
+    <output id="line1"></output>
+    <span>line 2 start and end: </span>
+    <output id="line2"></output>
+    <span>intersection at: </span>
+    <output id="intersect"></output>
+  </div>
+  <pre>
+  we can linear interpolate from 1 point to another to find any point on a line
+  by using a factor t that is from 0 to 1
+  x' = lerp(ax, bx, t)
+  y' = lerp(ay, by, t)
+  
+  an intersect between 2 lines is when the interpolated point from one line equals
+  an interpolated point on another line
+  lerp(ax, bx, t) = lerp(cx, dx, u)
+  lerp(ay, by, t) = lerp(cy, dy, u)
+
+  now we need to find the correct t and u values, and use them to get the x and y 
+  coords of the intersection, we expand the function like:
+  ax + (bx - ax) * t = cx + (dx - cx) * u
+  ay + (by - ay) * t = cy + (dy - cy) * u
+
+  move the cx and cy over to the left side:
+  ax - cx + (bx - ax) * t = (dx - cx) * u 
+  ay - cy + (by - ay) * t = (dy - cy) * u
+
+  can't divide by (dx - cx), it may be 0, so we need to use subsitution
+  use the 2nd equation and multiply both sides by (dx - cx)
+  the first equation is unchanged:
+  ax - cx + (bx - ax) * t = (dx - cx) * u 
+  (dx - cx) * (ay - cy + (by - ay) * t) = (dy - cy) * u * (dx - cx)
+
+  now there is a (dx - cx) * u in the 2nd equation, subsitute to get rid of u:
+  (dx - cx) * (ay - cy + (by - ay) * t) = (dy - cy) * (ax - cx + (bx - ax) * t)
+
+  distribute the (dx - cx), but keep ay - cy and ax -  cx grouped:
+  (dx - cx) * (ay - cy) + (dx - cx) * (by - ay) * t = (dy - cy) * (ax - cx) + (dy - cy) * (bx - ax) * t
+
+  swap (dx - cx) * (by - ay) * t with (dy - cy) * (ax - cx) so that t is all on one side:
+  (dx - cx) * (ay - cy) - (dy - cy) * (ax - cx)  = (dy - cy) * (bx - ax) * t - (dx - cx) * (by - ay) * t
+
+  factor out t:
+  (dx - cx) * (ay - cy) - (dy - cy) * (ax - cx)  = ((dy - cy) * (bx - ax) - (dx - cx) * (by - ay)) * t
+  
+  now t can be isolated, note: we still cannot guarentee that the divisor is not 0
+      (dx - cx) * (ay - cy) - (dy - cy) * (ax - cx)
+  t = ---------------------------------------------
+      (dy - cy) * (bx - ax) - (dx - cx) * (by - ay)
+
+  to find u, go back and repreat the same process from step 3
+  moving ax and ay this time
+  (bx - ax) * t = cx - ax + (dx - cx) * u
+  (by - ay) * t = cy - ay + (dy - cy) * u
+
+  use the 2nd equation, multiply both sides by (bx - ax)
+  (bx - ax) * t = cx - ax + (dx - cx) * u
+  (by - ay) * t * (bx - ax) = (cy - ay + (dy - cy) * u) * (bx - ax)
+
+  subsitute to get rid of t
+  (by - ay) * (cx - ax + (dx - cx) * u) = (cy - ay + (dy - cy) * u) * (bx - ax)
+
+  distribute and group
+  (by - ay) * (cx - ax) + (bx - ay) * (dx - cx) * u = (bx - ax) * (cy - ay) + (bx - ax) * (dy - cy) * u
+
+  move u to one side
+  (bx - ay) * (dx - cx) * u - (bx - ax) * (dy - cy) * u = (bx - ax) * (cy - ay) - (by - ay) * (cx - ax)
+
+  factor out u
+  ((bx - ay) * (dx - cx) - (bx - ax) * (dy - cy)) * u = (bx - ax) * (cy - ay) - (by - ay) * (cx - ax)
+  
+  now the left side looks like the divisor when we did t's calculation, just reversed
+  so reverse it back by multiplying both sides by -1
+  -1 * ((bx - ay) * (dx - cx) - (bx - ax) * (dy - cy)) * u = (bx - ax) * (cy - ay) * -1 - (by - ay) * (cx - ax) * -1
+
+  distribute the -1, but only on the right side 
+  -((bx - ay) * (dx - cx) - (bx - ax) * (dy - cy)) * u = -(bx - ax) * (cy - ay) - -(by - ay) * (cx - ax)
+  
+  the -1 coefficient reversed the subtraction inside the brackets
+  ((bx - ax) * (dy - cy) - (bx - ay) * (dx - cx)) * u = (ax - bx) * (cy - ay) - (ay - by) * (cx - ax)
+
+  isolate u
+      (ax - bx) * (cy - ay) - (ay - by) * (cx - ax)
+  u = ---------------------------------------------
+      (bx - ax) * (dy - cy) - (bx - ay) * (dx - cx)
+
+
+  if only there is an easier way.... wait, cross products???
+  </pre>
+</body>
+</html>
